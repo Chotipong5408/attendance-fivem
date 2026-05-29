@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  head
+  admin
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  leave
+}
+
+enum LeaveType {
+  full_day
+  partial
+}
+
+enum LeaveStatus {
+  approved
+  rejected
+}
+
+enum FineType {
+  absent
+  excess_leave
+}
+
+model User {
+  id        String   @id @default(uuid())
+  discordId String?  @unique
+  username  String?  @unique
+  number    String?  @unique
+  icName    String?
+  avatar    String?
+  password  String?
+  role              Role     @default(user)
+  passwordChangedAt DateTime?
+  createdAt         DateTime @default(now())
+
+  attendances   Attendance[]
+  leaveRequests LeaveRequest[]
+  activityLogs  ActivityLog[]
+  fines         Fine[]
+
+  @@map("users")
+}
+
+model Attendance {
+  id             String           @id @default(uuid())
+  userId         String
+  attendanceDate DateTime         @db.Date
+  status         AttendanceStatus
+  timeSlots      Json?            @default("{}")
+  note           String?
+  createdAt      DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, attendanceDate])
+  @@index([attendanceDate])
+  @@index([userId, attendanceDate])
+  @@map("attendance")
+}
+
+model LeaveRequest {
+  id            String      @id @default(uuid())
+  userId        String
+  leaveDate     DateTime    @db.Date
+  leaveType     LeaveType
+  leaveTimeSlot String?
+  reason        String?
+  image         String?
+  status        LeaveStatus @default(approved)
+  createdAt     DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, leaveDate])
+  @@index([userId, leaveDate])
+  @@map("leave_requests")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+model SystemSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+  
+  @@map("system_settings")
+}
+
+model Fine {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Int
+  reason    String
+  type      FineType
+  date      DateTime @db.Date
+  isPaid    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, type])
+  @@index([userId, isPaid])
+  @@map("fines")
+}

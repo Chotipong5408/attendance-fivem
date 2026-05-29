@@ -1,0 +1,17 @@
+{
+  "attendanceSlots": [
+    "19:30",
+    "20:00",
+    "22:00",
+    "22:30"
+  ],
+  "leaveSlots": [
+    "19:30",
+    "20:00",
+    "22:00",
+    "22:30"
+  ],
+  "absentFine": 50000,
+  "excessLeaveFine": 50000,
+  "maxLeavesPerWeek": 999
+}
