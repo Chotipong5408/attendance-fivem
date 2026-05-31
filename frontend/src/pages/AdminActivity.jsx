@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { activityApi } from '../api/client';
 import Loading from '../components/Loading';
 import { getUserDisplayName } from '../utils/userDisplay';
+import DateInput from '../components/DateInput';
 
 const actionLabels = {
   LOGIN: 'เข้าสู่ระบบ',
@@ -128,11 +129,10 @@ export default function AdminActivity() {
 
           <div className="flex items-center gap-2 min-w-[200px]">
             <CalendarDays className="text-slate-500" size={16} />
-            <input
-              type="date"
+            <DateInput
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
             />
             {dateFilter && (
               <button 

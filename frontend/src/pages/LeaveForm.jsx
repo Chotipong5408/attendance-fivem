@@ -6,6 +6,7 @@ import { leaveApi } from '../api/client';
 import { useSlots } from '../hooks/useSlots';
 import { useAuth } from '../context/AuthContext';
 import { getUserDisplayName } from '../utils/userDisplay';
+import DateInput from '../components/DateInput';
 
 function getLocalDateInputValue(targetDate = new Date()) {
   const year = targetDate.getFullYear();
@@ -159,11 +160,10 @@ export default function LeaveForm() {
                 <Calendar size={16} />
                 เลือกวันที่ลา
               </span>
-              <input
-                type="date"
+              <DateInput
                 value={leaveDate}
                 onChange={(e) => setLeaveDate(e.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={inputClass}
                 required
               />
             </label>
@@ -173,12 +173,11 @@ export default function LeaveForm() {
                 <Calendar size={16} className="text-slate-500" />
                 ถึงวันที่ (ถ้ามี)
               </span>
-              <input
-                type="date"
+              <DateInput
                 value={endDate}
                 min={leaveDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={inputClass}
               />
             </label>
           </div>

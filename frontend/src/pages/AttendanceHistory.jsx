@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Filter, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { attendanceApi } from '../api/client';
 import AttendanceTable from '../components/AttendanceTable';
+import DateInput from '../components/DateInput';
 
 export default function AttendanceHistory() {
   const [records, setRecords] = useState([]);
@@ -78,20 +79,18 @@ export default function AttendanceHistory() {
 
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">ตั้งแต่วันที่</span>
-            <input
-              type="date"
+            <DateInput
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
             />
           </label>
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">ถึงวันที่</span>
-            <input
-              type="date"
+            <DateInput
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
             />
           </label>
           <div className="flex items-end">

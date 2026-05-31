@@ -11,6 +11,7 @@ import Modal from '../components/Modal';
 import { getUserDisplayName } from '../utils/userDisplay';
 import { useSlots } from '../hooks/useSlots';
 import { formatReason } from '../utils/formatReason';
+import DateInput from '../components/DateInput';
 
 function NoteCell({ text }) {
   const [expanded, setExpanded] = useState(false);
@@ -197,11 +198,10 @@ function DailyTab({ attendanceSlots }) {
       <div className="flex flex-wrap items-end gap-3">
         <label className="block">
           <span className="mb-1 block text-xs text-slate-400">วันที่</span>
-          <input
-            type="date"
+          <DateInput
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
           />
         </label>
         <button
@@ -426,14 +426,14 @@ function HistoryTab({ attendanceSlots }) {
 
           <div>
             <label className="mb-1 block text-xs text-slate-400">จากวันที่</label>
-            <input type="date" value={filters.dateFrom}
-              onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })} className={`${inp} [color-scheme:dark]`} />
+            <DateInput value={filters.dateFrom}
+              onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })} className={inp} />
           </div>
 
           <div>
             <label className="mb-1 block text-xs text-slate-400">ถึงวันที่</label>
-            <input type="date" value={filters.dateTo}
-              onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })} className={`${inp} [color-scheme:dark]`} />
+            <DateInput value={filters.dateTo}
+              onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })} className={inp} />
           </div>
 
           <div className="flex gap-2">
