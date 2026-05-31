@@ -17,7 +17,7 @@ async function sendLeaveDiscordNotification(leave, user) {
   const embed = {
     title: '📋 แจ้งลา',
     color: 0x6366f1,
-    thumbnail: user.avatar ? { url: user.avatar } : undefined,
+    thumbnail: (user?.avatar || leave?.user?.avatar) ? { url: (user?.avatar || leave?.user?.avatar) } : undefined,
     fields: [
       { name: 'IC Name', value: user.icName || user.username, inline: true },
       { name: 'หมายเลข', value: user.number || '-', inline: true },
@@ -61,7 +61,7 @@ async function sendCancelLeaveDiscordNotification(leave, user) {
     title: '❌ ยกเลิกการลา',
     description: `ผู้ใช้ ${user.icName || user.username} ได้ทำการ **ยกเลิก** การลาที่เคยแจ้งไว้`,
     color: 0xef4444, // Red
-    thumbnail: user.avatar ? { url: user.avatar } : undefined,
+    thumbnail: (user?.avatar || leave?.user?.avatar) ? { url: (user?.avatar || leave?.user?.avatar) } : undefined,
     fields: [
       { name: 'IC Name', value: user.icName || user.username, inline: true },
       { name: 'หมายเลข', value: user.number || '-', inline: true },

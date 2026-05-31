@@ -147,7 +147,7 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
               leaveTimeSlot: mergedSlots,
               reason: mergedReason,
             },
-            include: { user: { select: { id: true, username: true, number: true, icName: true } } },
+            include: { user: { select: { id: true, username: true, number: true, icName: true, avatar: true } } },
           });
 
           await tx.attendance.upsert({
@@ -167,7 +167,7 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
               image,
               status: 'approved',
             },
-            include: { user: { select: { id: true, username: true, number: true, icName: true } } },
+            include: { user: { select: { id: true, username: true, number: true, icName: true, avatar: true } } },
           });
 
           await tx.attendance.upsert({
