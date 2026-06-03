@@ -56,7 +56,7 @@ export default function Sidebar() {
   const navContent = (
     <>
       <div className="border-b border-slate-700 px-6 py-5">
-        <h1 className="text-lg font-bold text-indigo-400">DissHunter </h1>
+        <h1 className="text-lg font-bold text-indigo-400">DissHunter Gang</h1>
         <div className="mt-4 flex items-center gap-3">
           {user?.avatar ? (
             <img src={user.avatar} alt="Avatar" className="h-10 w-10 rounded-full border border-slate-600 object-cover" />

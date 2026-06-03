@@ -422,12 +422,12 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
       for (const slotKey of ATTENDANCE_SLOTS) {
         let effStatus = 'present';
         const fromDb = slots[slotKey];
-        if (fromDb === 'absent') effStatus = 'absent';
-        else if (leave) {
+        // If admin has explicitly set a value in DB, that takes priority over leave
+        if (fromDb) {
+          effStatus = fromDb;
+        } else if (leave) {
           if (leave.leaveType === 'full_day') effStatus = 'leave';
           if (leave.leaveType === 'partial' && leave.leaveTimeSlot && leave.leaveTimeSlot.includes(slotKey)) effStatus = 'leave';
-        } else if (fromDb) {
-          effStatus = fromDb;
         }
 
         userStat[effStatus] = (userStat[effStatus] || 0) + 1;
@@ -599,12 +599,12 @@ router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
         for (const slotKey of ATTENDANCE_SLOTS) {
           let effStatus = 'present';
           const fromDb = slots[slotKey];
-          if (fromDb === 'absent') effStatus = 'absent';
-          else if (leave) {
+          // If admin has explicitly set a value in DB, that takes priority over leave
+          if (fromDb) {
+            effStatus = fromDb;
+          } else if (leave) {
             if (leave.leaveType === 'full_day') effStatus = 'leave';
             if (leave.leaveType === 'partial' && leave.leaveTimeSlot && leave.leaveTimeSlot.includes(slotKey)) effStatus = 'leave';
-          } else if (fromDb) {
-            effStatus = fromDb;
           }
 
           if (effStatus === 'present') present++;

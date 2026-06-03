@@ -17,12 +17,16 @@ function parseTimeSlots(ts) {
 
 function getEffectiveSlot(slots, leave, slotKey) {
   const fromDb = slots[slotKey];
-  if (fromDb === 'absent') return 'absent';
+
+  // If admin has explicitly set a value in DB, that takes priority over leave
+  if (fromDb) return fromDb;
+
+  // No explicit admin override — check leave status
   if (leave) {
     if (leave.leaveType === 'full_day') return 'leave';
     if (leave.leaveType === 'partial' && leave.leaveTimeSlot && leave.leaveTimeSlot.includes(slotKey)) return 'leave';
   }
-  return fromDb || 'present';
+  return 'present';
 }
 
 function SlotBadge({ status }) {
