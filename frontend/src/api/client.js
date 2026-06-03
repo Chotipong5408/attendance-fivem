@@ -77,6 +77,7 @@ export const exportApi = {
 
 export const finesApi = {
   list: (params) => api.get('/fines', { params }),
+  create: (data) => api.post('/fines', data),
   pay: (userId) => api.put(`/fines/${userId}/pay`),
 };
 

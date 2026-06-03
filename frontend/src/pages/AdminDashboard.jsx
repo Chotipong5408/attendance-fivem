@@ -145,7 +145,7 @@ export default function AdminDashboard() {
         <section className="lg:col-span-2 rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-lg">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="text-indigo-400" size={20} />
-            <h3 className="font-semibold text-white">กราฟการเข้างานรายวัน (สัปดาห์นี้)</h3>
+            <h3 className="font-semibold text-white">สถิติการมารายวัน (สัปดาห์นี้)</h3>
           </div>
           <div className="h-72 w-full text-sm">
             <ResponsiveContainer width="100%" height="100%">

@@ -32,6 +32,7 @@ enum LeaveStatus {
 enum FineType {
   absent
   excess_leave
+  manual
 }
 
 model User {
@@ -124,7 +125,6 @@ model Fine {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, date, type])
   @@index([userId, isPaid])
   @@map("fines")
 }

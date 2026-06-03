@@ -356,13 +356,11 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
     }
 
     const where = { attendanceDate: { gte: from, lte: toDay } };
-    const todayWhere = { attendanceDate: today };
 
     const [
       attendances,
       leaves,
       users,
-      todayPresent, todayAbsent, todayLeave,
       recentActivities
     ] = await Promise.all([
       prisma.attendance.findMany({ where }),
@@ -372,10 +370,6 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
         select: { id: true, username: true, number: true, icName: true, createdAt: true },
         orderBy: { createdAt: 'asc' }
       }),
-      // Today summary counts based on root status for now
-      prisma.attendance.count({ where: { ...todayWhere, status: 'present' } }),
-      prisma.attendance.count({ where: { ...todayWhere, status: 'absent' } }),
-      prisma.attendance.count({ where: { ...todayWhere, status: 'leave' } }),
       // Fetch recent activities
       prisma.activityLog.findMany({
         take: 10,
@@ -440,12 +434,11 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
       }
     }
 
-    const todaySummary = {
-      present: todayPresent,
-      absent: todayAbsent,
-      leave: todayLeave,
-      total: todayPresent + todayAbsent + todayLeave,
-    };
+    // Compute todaySummary from dailyMap (based on timeSlots + leave, not root status)
+    const todayDailyStat = dailyMap.get(today.toISOString());
+    const todaySummary = todayDailyStat
+      ? { present: todayDailyStat.present, absent: todayDailyStat.absent, leave: todayDailyStat.leave, total: todayDailyStat.total }
+      : { present: 0, absent: 0, leave: 0, total: 0 };
 
     const userStatsArr = users.map((user) => {
       const counts = statsMap.get(user.id);

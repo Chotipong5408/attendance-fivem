@@ -1,0 +1,1 @@
+ALTER TYPE "FineType" ADD VALUE IF NOT EXISTS 'manual';

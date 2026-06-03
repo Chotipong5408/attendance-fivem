@@ -4,7 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const prisma = require('./lib/prisma');
 const config = require('./config');
-const { startAutoAttendanceCron } = require('./utils/cron');
+const { startAutoAttendanceCron, startCleanupCron } = require('./utils/cron');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -80,6 +80,7 @@ app.use((err, req, res, _next) => {
 const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`Server running on port ${config.port} (${config.nodeEnv})`);
   startAutoAttendanceCron();
+  startCleanupCron();
 });
 
 process.on('SIGTERM', async () => {

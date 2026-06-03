@@ -14,11 +14,13 @@ const {
   deleteUserSchema,
 } = require('../middleware/validate');
 
+const managerMiddleware = require('../middleware/manager');
+
 const router = express.Router();
 
 router.use(authMiddleware);
 
-router.get('/', adminMiddleware, async (req, res, next) => {
+router.get('/', managerMiddleware, async (req, res, next) => {
   try {
     const { page, limit, skip } = getPaginationParams(req.query);
     const search = req.query.search?.trim();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import { DollarSign, CheckCircle, AlertCircle, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { finesApi } from '../api/client';
+import { finesApi, usersApi } from '../api/client';
 import Loading from '../components/Loading';
 import Modal from '../components/Modal';
 import { getUserDisplayName } from '../utils/userDisplay';
@@ -12,9 +12,15 @@ export default function AdminFines() {
   const [payTarget, setPayTarget] = useState(null);
   const [paying, setPaying] = useState(false);
 
+  // Manual fine state
+  const [addModal, setAddModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [addForm, setAddForm] = useState({ userId: '', amount: '', reason: '' });
+  const [adding, setAdding] = useState(false);
+
   const fetchFines = useCallback(async () => {
     try {
-      const { data } = await finesApi.list();
+      const { data } = await finesApi.list({ scope: 'all' });
       // data is an array of { user, totalAmount, details: [] }
       setFines(data);
     } catch (err) {
@@ -27,6 +33,14 @@ export default function AdminFines() {
   useEffect(() => {
     void fetchFines();
   }, [fetchFines]);
+
+  useEffect(() => {
+    if (addModal && users.length === 0) {
+      usersApi.list({ limit: 100 })
+        .then(res => setUsers(res.data.data || []))
+        .catch(() => toast.error('ไม่สามารถโหลดรายชื่อผู้ใช้ได้'));
+    }
+  }, [addModal, users.length]);
 
   const handlePay = async () => {
     if (!payTarget) return;
@@ -43,6 +57,30 @@ export default function AdminFines() {
     }
   };
 
+  const handleAddFine = async (e) => {
+    e.preventDefault();
+    if (!addForm.userId || !addForm.amount || !addForm.reason.trim()) {
+      return toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
+    }
+    setAdding(true);
+    try {
+      await finesApi.create({
+        userId: addForm.userId,
+        amount: Number(addForm.amount),
+        reason: addForm.reason
+      });
+      toast.success('เพิ่มค่าปรับสำเร็จ');
+      setAddModal(false);
+      setAddForm({ userId: '', amount: '', reason: '' });
+      await fetchFines();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'ทำรายการไม่สำเร็จ');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+
   if (loading) return <Loading />;
 
   const totalOwed = fines.reduce((sum, f) => sum + f.totalAmount, 0);
@@ -54,13 +92,22 @@ export default function AdminFines() {
           <h1 className="text-2xl font-bold text-white">จัดการค่าปรับ</h1>
           <p className="text-sm text-slate-400">ดูยอดค้างชำระและเคลียร์ยอดค่าปรับของสมาชิก</p>
         </div>
-        <div className="flex items-center gap-3 rounded-xl bg-slate-800 p-4 border border-slate-700">
-          <div className="rounded-lg bg-red-500/20 p-2 text-red-400">
-            <DollarSign size={24} />
-          </div>
-          <div>
-            <p className="text-sm text-slate-400">ยอดค้างชำระรวม</p>
-            <p className="text-xl font-bold text-white">฿{totalOwed.toLocaleString()}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            onClick={() => setAddModal(true)}
+            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20"
+          >
+            <Plus size={16} />
+            เพิ่มค่าปรับ
+          </button>
+          <div className="flex items-center gap-3 rounded-xl bg-slate-800 p-4 border border-slate-700">
+            <div className="rounded-lg bg-red-500/20 p-2 text-red-400">
+              <DollarSign size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-slate-400">ยอดค้างชำระรวม</p>
+              <p className="text-xl font-bold text-white">฿{totalOwed.toLocaleString()}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -165,6 +212,65 @@ export default function AdminFines() {
             {paying ? 'กำลังดำเนินการ...' : 'ยืนยันชำระเงิน'}
           </button>
         </div>
+      </Modal>
+
+      {/* Add Fine Modal */}
+      <Modal open={addModal} onClose={() => setAddModal(false)} title="เพิ่มค่าปรับ (Manual)">
+        <form onSubmit={handleAddFine} className="space-y-4 text-sm text-slate-300">
+          <label className="block">
+            <span className="mb-1 block text-slate-400">ผู้ใช้</span>
+            <select
+              value={addForm.userId}
+              onChange={(e) => setAddForm({ ...addForm, userId: e.target.value })}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+              required
+            >
+              <option value="">-- เลือกผู้ใช้ --</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{getUserDisplayName(u)} ({u.number || '-'})</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-slate-400">จำนวนเงินค่าปรับ (฿)</span>
+            <input
+              type="number"
+              min="1"
+              value={addForm.amount}
+              onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+              placeholder="ตัวอย่าง: 50000"
+              required
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-slate-400">เหตุผลที่โดนปรับ</span>
+            <input
+              type="text"
+              value={addForm.reason}
+              onChange={(e) => setAddForm({ ...addForm, reason: e.target.value })}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+              placeholder="ตัวอย่าง: ทำผิดกฎหมายในเมือง"
+              required
+            />
+          </label>
+          <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-700">
+            <button
+              type="button"
+              onClick={() => setAddModal(false)}
+              className="px-4 py-2 text-slate-400 hover:text-white"
+            >
+              ยกเลิก
+            </button>
+            <button
+              type="submit"
+              disabled={adding}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500 disabled:opacity-50"
+            >
+              {adding ? 'กำลังบันทึก...' : 'เพิ่มค่าปรับ'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

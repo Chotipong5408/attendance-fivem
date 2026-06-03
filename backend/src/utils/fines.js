@@ -39,11 +39,20 @@ async function syncFinesForDate(userId, date) {
     const timeText = absentSlotNames.length > 0 ? ` (รอบ ${absentSlotNames.join(', ')})` : '';
     const reasonText = `ขาดเช็คชื่อ ${absentSlotsCount} รอบ${timeText}`;
     
-    await prisma.fine.upsert({
-      where: { userId_date_type: { userId, date: targetDate, type: 'absent' } },
-      update: { amount: totalAbsentFine, reason: reasonText },
-      create: { userId, date: targetDate, type: 'absent', amount: totalAbsentFine, reason: reasonText },
+    const existingAbsentFine = await prisma.fine.findFirst({
+      where: { userId, date: targetDate, type: 'absent' }
     });
+
+    if (existingAbsentFine) {
+      await prisma.fine.update({
+        where: { id: existingAbsentFine.id },
+        data: { amount: totalAbsentFine, reason: reasonText },
+      });
+    } else {
+      await prisma.fine.create({
+        data: { userId, date: targetDate, type: 'absent', amount: totalAbsentFine, reason: reasonText },
+      });
+    }
   } else {
     // Delete unpaid absent fine for this date if it exists
     await prisma.fine.deleteMany({
@@ -99,11 +108,20 @@ async function syncFinesForDate(userId, date) {
     if (excessSlots > 0) {
       // create or update fine
       const fineAmount = excessSlots * excessLeaveFine;
-      await prisma.fine.upsert({
-        where: { userId_date_type: { userId, date: lDate, type: 'excess_leave' } },
-        update: { amount: fineAmount, reason: `ลาเกินโควต้า (${excessSlots} รอบ)` },
-        create: { userId, date: lDate, type: 'excess_leave', amount: fineAmount, reason: `ลาเกินโควต้า (${excessSlots} รอบ)` },
+      const existingLeaveFine = await prisma.fine.findFirst({
+        where: { userId, date: lDate, type: 'excess_leave' }
       });
+
+      if (existingLeaveFine) {
+        await prisma.fine.update({
+          where: { id: existingLeaveFine.id },
+          data: { amount: fineAmount, reason: `ลาเกินโควต้า (${excessSlots} รอบ)` },
+        });
+      } else {
+        await prisma.fine.create({
+          data: { userId, date: lDate, type: 'excess_leave', amount: fineAmount, reason: `ลาเกินโควต้า (${excessSlots} รอบ)` },
+        });
+      }
     } else {
       // should not have fine
       await prisma.fine.deleteMany({
