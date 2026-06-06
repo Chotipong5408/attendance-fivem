@@ -32,6 +32,7 @@ export const authApi = {
   getMe: () => api.get('/auth/me'),
   getDiscordUrl: () => api.get('/auth/discord/url'),
   discordCallback: (code) => api.post('/auth/discord/callback', { code }),
+  setIcName: (icName) => api.put('/auth/discord/set-icname', { icName }),
 };
 
 export const usersApi = {
