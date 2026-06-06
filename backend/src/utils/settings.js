@@ -1,7 +1,6 @@
-const fs = require('fs/promises');
-const path = require('path');
+const prisma = require('../lib/prisma');
 
-const SETTINGS_FILE = path.join(__dirname, '..', '..', 'data', 'settings.json');
+const SETTINGS_KEY = 'app_settings';
 
 const DEFAULT_SETTINGS = {
   attendanceSlots: ['19:30', '20:00', '22:00', '22:30'],
@@ -11,26 +10,45 @@ const DEFAULT_SETTINGS = {
   maxLeavesPerWeek: 4
 };
 
+// In-memory cache to avoid hitting DB on every request
+let cachedSettings = null;
+
 async function getSettings() {
+  // Return cached settings if available
+  if (cachedSettings) return cachedSettings;
+
   try {
-    const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      await saveSettings(DEFAULT_SETTINGS);
-      return DEFAULT_SETTINGS;
+    const row = await prisma.systemSetting.findUnique({
+      where: { key: SETTINGS_KEY },
+    });
+
+    if (row) {
+      cachedSettings = JSON.parse(row.value);
+      return cachedSettings;
     }
-    console.error('Failed to read settings:', error);
+
+    // No row found — initialize with defaults
+    await saveSettings(DEFAULT_SETTINGS);
+    return DEFAULT_SETTINGS;
+  } catch (error) {
+    console.error('Failed to read settings from DB:', error);
+    // Fallback to defaults but don't cache so we retry on next call
     return DEFAULT_SETTINGS;
   }
 }
 
 async function saveSettings(settings) {
   try {
-    await fs.mkdir(path.dirname(SETTINGS_FILE), { recursive: true });
-    await fs.writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+    await prisma.systemSetting.upsert({
+      where: { key: SETTINGS_KEY },
+      update: { value: JSON.stringify(settings) },
+      create: { key: SETTINGS_KEY, value: JSON.stringify(settings) },
+    });
+
+    // Update cache
+    cachedSettings = settings;
   } catch (error) {
-    console.error('Failed to save settings:', error);
+    console.error('Failed to save settings to DB:', error);
     throw error;
   }
 }

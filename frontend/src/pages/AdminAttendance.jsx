@@ -352,7 +352,7 @@ function HistoryTab({ attendanceSlots }) {
   const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      const params = { page, limit: 20 };
+      const params = { page, limit: 20, viewAll: true };
       if (applied.status) params.status = applied.status;
       if (applied.username.trim()) params.username = applied.username.trim();
       if (applied.dateFrom) params.dateFrom = applied.dateFrom;
