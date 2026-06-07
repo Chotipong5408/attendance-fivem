@@ -133,8 +133,11 @@ router.get('/daily', managerMiddleware, async (req, res, next) => {
         role: { in: ['user', 'head'] },
         createdAt: { lte: endOfDay(date) }
       },
-      select: { id: true, username: true, number: true, icName: true },
-      orderBy: { createdAt: 'asc' },
+      select: { id: true, username: true, number: true, icName: true, role: true },
+      orderBy: [
+        { role: 'desc' },
+        { createdAt: 'asc' }
+      ],
     });
 
     const attendances = await prisma.attendance.findMany({
@@ -517,12 +520,15 @@ router.get('/stats', managerMiddleware, async (req, res, next) => {
 router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
   try {
     const { page, limit, skip } = getPaginationParams(req.query);
-    const { status, username, userId, dateFrom, dateTo, search, date } = req.query;
+    const { status, username, userId, dateFrom, dateTo, search, date, viewAll } = req.query;
     const isAdmin = req.user.role === 'admin';
+    const isHead = req.user.role === 'head';
+    // admin always sees all; head sees all only from admin attendance page (viewAll=true)
+    const canViewAll = isAdmin || (isHead && viewAll === 'true');
 
     const where = {};
 
-    if (!isAdmin) {
+    if (!canViewAll) {
       where.userId = req.user.id;
     } else if (userId) {
       where.userId = userId;
@@ -554,9 +560,10 @@ router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
         where,
         skip,
         take: limit,
-        include: { user: { select: { id: true, username: true, number: true, icName: true } } },
+        include: { user: { select: { id: true, username: true, number: true, icName: true, role: true } } },
         orderBy: [
           { attendanceDate: 'desc' },
+          { user: { role: 'desc' } },
           { user: { createdAt: 'asc' } }
         ],
       }),

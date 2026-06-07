@@ -160,12 +160,12 @@ router.post('/discord/callback', async (req, res, next) => {
     let user = await prisma.user.findUnique({ where: { discordId } });
 
     if (!user) {
-      // Auto-create new user
+      // Auto-create new user with null icName — user must set it on first login
       user = await prisma.user.create({
         data: {
           discordId,
           username: discordUsername,
-          icName: memberData.nick || discordUser.global_name || discordUsername,
+          icName: null,
           avatar: discordAvatar,
           number: null,
           role: 'user',
@@ -195,9 +195,37 @@ router.post('/discord/callback', async (req, res, next) => {
       ipAddress: getIp(req),
     });
 
-    res.json({ token, user: toPublicUser(user) });
+    // If user has no icName, tell frontend to prompt for it
+    const needsIcName = !user.icName;
+    res.json({ token, user: toPublicUser(user), needsIcName });
   } catch (err) {
     console.error('Discord Auth Error:', err);
+    next(err);
+  }
+});
+
+// --- SET IC NAME (for Discord users who haven't set it yet) ---
+router.put('/discord/set-icname', authMiddleware, async (req, res, next) => {
+  try {
+    const { icName } = req.body;
+    if (!icName || typeof icName !== 'string' || icName.trim().length < 2) {
+      return res.status(400).json({ error: 'Bad Request', message: 'กรุณากรอกชื่อ IC อย่างน้อย 2 ตัวอักษร' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { icName: icName.trim() },
+    });
+
+    logActivity({
+      userId: user.id,
+      action: 'SET_IC_NAME',
+      details: { icName: icName.trim(), method: 'discord_first_login' },
+      ipAddress: getIp(req),
+    });
+
+    res.json({ user: toPublicUser(user) });
+  } catch (err) {
     next(err);
   }
 });

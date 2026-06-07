@@ -74,6 +74,7 @@ const attendanceQuerySchema = z.object({
     dateTo: z.string().optional(),
     search: z.string().optional(),
     date: z.string().optional(),
+    viewAll: z.string().optional(),
   }),
 });
 
