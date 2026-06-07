@@ -133,8 +133,11 @@ router.get('/daily', managerMiddleware, async (req, res, next) => {
         role: { in: ['user', 'head'] },
         createdAt: { lte: endOfDay(date) }
       },
-      select: { id: true, username: true, number: true, icName: true },
-      orderBy: { createdAt: 'asc' },
+      select: { id: true, username: true, number: true, icName: true, role: true },
+      orderBy: [
+        { role: 'desc' },
+        { createdAt: 'asc' }
+      ],
     });
 
     const attendances = await prisma.attendance.findMany({
@@ -557,9 +560,10 @@ router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
         where,
         skip,
         take: limit,
-        include: { user: { select: { id: true, username: true, number: true, icName: true } } },
+        include: { user: { select: { id: true, username: true, number: true, icName: true, role: true } } },
         orderBy: [
           { attendanceDate: 'desc' },
+          { user: { role: 'desc' } },
           { user: { createdAt: 'asc' } }
         ],
       }),
