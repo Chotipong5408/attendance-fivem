@@ -111,26 +111,43 @@ router.post('/discord/callback', async (req, res, next) => {
 
     const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'DiscordBot (https://github.com/attendance, 1.0.0)'
+      },
       body: tokenParams,
     });
-    const tokenData = await tokenRes.json();
+    const tokenText = await tokenRes.text();
+    let tokenData;
+    try {
+      tokenData = JSON.parse(tokenText);
+    } catch (e) {
+      console.error('Discord Token Error (Not JSON):', tokenText);
+      return res.status(502).json({ error: 'Bad Gateway', message: 'ไม่สามารถเชื่อมต่อกับ Discord API ได้ (Invalid Response)' });
+    }
+
     if (!tokenRes.ok) {
       console.error('Discord Token Error:', tokenData);
-      return res.status(401).json({ error: 'Unauthorized', message: 'Discord authentication failed.' });
+      return res.status(401).json({ error: 'Unauthorized', message: 'การยืนยันตัวตนผ่าน Discord ล้มเหลว' });
     }
 
     const { access_token } = tokenData;
 
     // 2. Get User Profile
     const userRes = await fetch('https://discord.com/api/users/@me', {
-      headers: { Authorization: `Bearer ${access_token}` },
+      headers: { 
+        Authorization: `Bearer ${access_token}`,
+        'User-Agent': 'DiscordBot (https://github.com/attendance, 1.0.0)'
+      },
     });
     const discordUser = await userRes.json();
 
     // 3. Get Guild Member Info (Check Role)
     const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
-      headers: { Authorization: `Bearer ${access_token}` },
+      headers: { 
+        Authorization: `Bearer ${access_token}`,
+        'User-Agent': 'DiscordBot (https://github.com/attendance, 1.0.0)'
+      },
     });
     
     if (memberRes.status === 404) {
