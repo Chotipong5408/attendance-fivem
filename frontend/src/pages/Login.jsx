@@ -68,10 +68,10 @@ export default function Login() {
           {!showAdminLogin ? (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <p className="text-slate-300">กรุณาเข้าสู่ระบบด้วยบัญชี Discord ของคุณ</p>
+                <p className="text-slate-300">ปิดปรับปรุงระบบชั่วคราว</p>
               </div>
 
-              <button
+              {/* <button
                 onClick={handleDiscordLogin}
                 disabled={discordLoading}
                 className="group relative flex w-full items-center justify-center gap-3 rounded-xl bg-[#5865F2] px-4 py-4 font-semibold text-white transition-all hover:bg-[#4752C4] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
@@ -84,7 +84,7 @@ export default function Login() {
                   </svg>
                 )}
                 {discordLoading ? 'กำลังพาไปที่หน้า Discord...' : 'Login with Discord'}
-              </button>
+              </button> */}
 
               <div className="mt-6 text-center">
                 <button
