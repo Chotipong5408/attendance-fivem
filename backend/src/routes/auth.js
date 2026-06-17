@@ -89,7 +89,7 @@ router.get('/discord/url', (req, res) => {
   res.json({ url });
 });
 
-router.post('/discord/callback', async (req, res, next) => {
+router.post('/discord/callback', loginLimiter, async (req, res, next) => {
   try {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Bad Request', message: 'No code provided' });
