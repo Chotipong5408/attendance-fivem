@@ -9,6 +9,8 @@ const { syncFinesForDate } = require('../utils/fines');
 const authMiddleware = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const { validate, leaveSchema, leaveQuerySchema } = require('../middleware/validate');
+const { buildTimeSlotsForLeave } = require('../utils/autoAttendance');
+const { getSettings } = require('../utils/settings');
 
 const router = express.Router();
 
@@ -150,10 +152,20 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
             include: { user: { select: { id: true, username: true, number: true, icName: true, avatar: true } } },
           });
 
+          let attendanceNewSlots = {};
+          const existingAtt = attendanceMap.get(d.toISOString());
+          if (existingAtt && existingAtt.timeSlots) {
+            attendanceNewSlots = typeof existingAtt.timeSlots === 'string' ? JSON.parse(existingAtt.timeSlots) : { ...existingAtt.timeSlots };
+            const leaveSlots = created.leaveType === 'full_day' ? (await getSettings()).attendanceSlots : created.leaveTimeSlot.split(',');
+            for (const s of leaveSlots) attendanceNewSlots[s] = 'leave';
+          } else {
+            attendanceNewSlots = await buildTimeSlotsForLeave(created);
+          }
+
           await tx.attendance.upsert({
             where: { userId_attendanceDate: { userId, attendanceDate: d } },
-            update: { status: 'leave', note: formatLeaveNote(leaveType, mergedSlots, mergedReason) },
-            create: { userId, attendanceDate: d, status: 'leave', note: formatLeaveNote(leaveType, mergedSlots, mergedReason) },
+            update: { status: 'leave', timeSlots: attendanceNewSlots, note: formatLeaveNote(leaveType, mergedSlots, mergedReason) },
+            create: { userId, attendanceDate: d, status: 'leave', timeSlots: attendanceNewSlots, note: formatLeaveNote(leaveType, mergedSlots, mergedReason) },
           });
         } else {
           // Create new leave record
@@ -170,10 +182,20 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
             include: { user: { select: { id: true, username: true, number: true, icName: true, avatar: true } } },
           });
 
+          let attendanceNewSlots = {};
+          const existingAtt = attendanceMap.get(d.toISOString());
+          if (existingAtt && existingAtt.timeSlots) {
+            attendanceNewSlots = typeof existingAtt.timeSlots === 'string' ? JSON.parse(existingAtt.timeSlots) : { ...existingAtt.timeSlots };
+            const leaveSlots = created.leaveType === 'full_day' ? (await getSettings()).attendanceSlots : created.leaveTimeSlot.split(',');
+            for (const s of leaveSlots) attendanceNewSlots[s] = 'leave';
+          } else {
+            attendanceNewSlots = await buildTimeSlotsForLeave(created);
+          }
+
           await tx.attendance.upsert({
             where: { userId_attendanceDate: { userId, attendanceDate: d } },
-            update: { status: 'leave', note: formatLeaveNote(leaveType, leaveTimeSlot, reason) },
-            create: { userId, attendanceDate: d, status: 'leave', note: formatLeaveNote(leaveType, leaveTimeSlot, reason) },
+            update: { status: 'leave', timeSlots: attendanceNewSlots, note: formatLeaveNote(leaveType, leaveTimeSlot, reason) },
+            create: { userId, attendanceDate: d, status: 'leave', timeSlots: attendanceNewSlots, note: formatLeaveNote(leaveType, leaveTimeSlot, reason) },
           });
         }
 
