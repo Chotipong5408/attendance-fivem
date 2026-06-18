@@ -116,6 +116,8 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
       image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     }
 
+    const { attendanceSlots: ATTENDANCE_SLOTS } = await getSettings();
+
     const firstCreatedLeave = await prisma.$transaction(async (tx) => {
       let firstLeave = null;
       for (const d of datesToLeave) {
@@ -156,7 +158,7 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
           const existingAtt = attendanceMap.get(d.toISOString());
           if (existingAtt && existingAtt.timeSlots) {
             attendanceNewSlots = typeof existingAtt.timeSlots === 'string' ? JSON.parse(existingAtt.timeSlots) : { ...existingAtt.timeSlots };
-            const leaveSlots = created.leaveType === 'full_day' ? (await getSettings()).attendanceSlots : created.leaveTimeSlot.split(',');
+            const leaveSlots = created.leaveType === 'full_day' ? ATTENDANCE_SLOTS : created.leaveTimeSlot.split(',');
             for (const s of leaveSlots) attendanceNewSlots[s] = 'leave';
           } else {
             attendanceNewSlots = await buildTimeSlotsForLeave(created);
@@ -186,7 +188,7 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
           const existingAtt = attendanceMap.get(d.toISOString());
           if (existingAtt && existingAtt.timeSlots) {
             attendanceNewSlots = typeof existingAtt.timeSlots === 'string' ? JSON.parse(existingAtt.timeSlots) : { ...existingAtt.timeSlots };
-            const leaveSlots = created.leaveType === 'full_day' ? (await getSettings()).attendanceSlots : created.leaveTimeSlot.split(',');
+            const leaveSlots = created.leaveType === 'full_day' ? ATTENDANCE_SLOTS : created.leaveTimeSlot.split(',');
             for (const s of leaveSlots) attendanceNewSlots[s] = 'leave';
           } else {
             attendanceNewSlots = await buildTimeSlotsForLeave(created);
