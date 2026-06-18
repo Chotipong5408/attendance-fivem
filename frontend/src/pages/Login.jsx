@@ -68,7 +68,7 @@ export default function Login() {
           {!showAdminLogin ? (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <p className="text-slate-300">ปิดปรับปรุงระบบชั่วคราว</p>
+                <p className="text-slate-300">กรุณาเข้าสู่ระบบด้วยบัญชี Discord ของคุณ</p>
               </div>
 
               <button
