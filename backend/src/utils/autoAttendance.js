@@ -249,6 +249,7 @@ async function ensureDateRangeBatch(from, to) {
 
 
 module.exports = {
+  buildTimeSlotsForLeave,
   ensureUserAttendanceForDate,
   ensureAllUsersAttendanceForDate,
   ensureDateRangeBatch,
