@@ -323,10 +323,10 @@ router.delete('/:id', async (req, res, next) => {
         }
 
         let hasPresent = false;
-        // Revert 'leave' to 'absent'
+        // Revert 'leave' to 'present' (ตามที่ผู้ใช้ต้องการ)
         for (const slot in currentSlots) {
           if (currentSlots[slot] === 'leave') {
-            currentSlots[slot] = 'absent';
+            currentSlots[slot] = 'present';
           }
           if (currentSlots[slot] === 'present') {
             hasPresent = true;
