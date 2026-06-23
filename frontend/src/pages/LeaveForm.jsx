@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Calendar, FileText, User } from 'lucide-react';
+import { Send, Calendar, FileText, User, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { leaveApi } from '../api/client';
 import { useSlots } from '../hooks/useSlots';
@@ -140,7 +140,19 @@ export default function LeaveForm() {
   };
 
   return (
-    <article className="mx-auto max-w-xl">
+    <>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-2xl bg-slate-900 border border-slate-700 p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+            <Loader2 size={48} className="animate-spin text-indigo-500" />
+            <div className="text-center">
+              <p className="text-lg font-semibold text-white">กำลังบันทึกข้อมูลการลา</p>
+              <p className="text-sm text-slate-400 mt-1">กรุณารอสักครู่ ห้ามรีเฟรชหรือปิดหน้าต่างนี้...</p>
+            </div>
+          </div>
+        </div>
+      )}
+      <article className="mx-auto max-w-xl relative">
       <section className="rounded-xl border border-slate-700 bg-slate-900 p-6">
         <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
           <div className="flex items-center gap-2">
@@ -271,14 +283,24 @@ export default function LeaveForm() {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
             >
-              <Send size={18} />
-              {loading ? 'กำลังบันทึก...' : 'บันทึกการลา'}
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  กำลังบันทึกข้อมูล กรุณารอสักครู่...
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  บันทึกการลา
+                </>
+              )}
             </button>
           </footer>
         </form>
       </section>
     </article>
+    </>
   );
 }

@@ -71,6 +71,10 @@ export default function Login() {
                 <p className="text-slate-300">กรุณาเข้าสู่ระบบด้วยบัญชี Discord ของคุณ</p>
               </div>
 
+              {/* <div className="text-center mb-6">
+                <p className="text-slate-300">พิมพ์ลาในห้องได้เลย ปิดปรับปรุงระบบ</p>
+              </div> */}
+
               <button
                 onClick={handleDiscordLogin}
                 disabled={discordLoading}
