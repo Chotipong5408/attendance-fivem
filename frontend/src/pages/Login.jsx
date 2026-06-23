@@ -72,7 +72,7 @@ export default function Login() {
               </div>
 
               {/* <div className="text-center mb-6">
-                <p className="text-slate-300">พิมพ์ลาในห้องได้เลย ปิดปรับปรุงระบบ</p>
+                <p className="text-slate-300">พิมพ์ลาในห้องได้เลย ปิดปรับปรุงระบบชั่วคราว</p>
               </div> */}
 
               <button
