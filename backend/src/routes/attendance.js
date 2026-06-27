@@ -416,6 +416,8 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
       const dateKey = startOfDay(att.attendanceDate).toISOString();
       const dailyStat = dailyMap.get(dateKey);
       
+      const dailyUserStatuses = new Set();
+      
       for (const slotKey of ATTENDANCE_SLOTS) {
         let effStatus = 'present';
         const fromDb = slots[slotKey];
@@ -426,7 +428,10 @@ router.get('/stats/dashboard', managerMiddleware, async (req, res, next) => {
           if (leave.leaveType === 'full_day') effStatus = 'leave';
           if (leave.leaveType === 'partial' && leave.leaveTimeSlot && leave.leaveTimeSlot.includes(slotKey)) effStatus = 'leave';
         }
+        dailyUserStatuses.add(effStatus);
+      }
 
+      for (const effStatus of dailyUserStatuses) {
         userStat[effStatus] = (userStat[effStatus] || 0) + 1;
         summary[effStatus] = (summary[effStatus] || 0) + 1;
         summary.total++;
@@ -596,6 +601,9 @@ router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
           try { slots = JSON.parse(slots); } catch(e) { slots = {}; }
         }
         const leave = leaveMap.get(`${att.userId}|${startOfDay(att.attendanceDate).toISOString()}`);
+        
+        const dailyUserStatuses = new Set();
+        
         for (const slotKey of ATTENDANCE_SLOTS) {
           let effStatus = 'present';
           const fromDb = slots[slotKey];
@@ -606,7 +614,11 @@ router.get('/', validate(attendanceQuerySchema), async (req, res, next) => {
             if (leave.leaveType === 'full_day') effStatus = 'leave';
             if (leave.leaveType === 'partial' && leave.leaveTimeSlot && leave.leaveTimeSlot.includes(slotKey)) effStatus = 'leave';
           }
+          
+          dailyUserStatuses.add(effStatus);
+        }
 
+        for (const effStatus of dailyUserStatuses) {
           if (effStatus === 'present') present++;
           else if (effStatus === 'absent') absent++;
           else if (effStatus === 'leave') leaveCount++;
