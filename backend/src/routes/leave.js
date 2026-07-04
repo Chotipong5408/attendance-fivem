@@ -202,7 +202,7 @@ router.post('/', upload.single('image'), validate(leaveSchema), async (req, res,
         if (!firstLeave) firstLeave = created;
       }
       return firstLeave;
-    });
+    }, { timeout: 20000 });
 
     logActivity({
       userId,
@@ -340,7 +340,7 @@ router.delete('/:id', async (req, res, next) => {
           },
         });
       }
-    });
+    }, { timeout: 10000 });
 
     logActivity({
       userId: req.user.id,
