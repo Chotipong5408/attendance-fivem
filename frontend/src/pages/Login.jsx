@@ -95,7 +95,7 @@ export default function Login() {
                   onClick={() => setShowAdminLogin(true)}
                   className="text-sm text-slate-500 hover:text-indigo-400 transition-colors flex items-center justify-center gap-1 mx-auto"
                 >
-                  <ShieldAlert size={14} /> แอดมินล็อคอิน
+                  <ShieldAlert size={14} /> adminonly
                 </button>
               </div>
             </div>
